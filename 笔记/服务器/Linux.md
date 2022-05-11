@@ -1,8 +1,7 @@
-# 2、文件权限与目录配置
-
-## 2.1、Linux的三类用户
-
-- 拥有者
-- 同组用户
-- 其他用户
+```
+// tomcat 启动
+sh /usr/local/tomcat/bin/startup.sh
+// 关闭tomcat
+sh /usr/local/tomcat/bin/shutdown.sh
+```
 

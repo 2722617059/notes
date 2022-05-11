@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 # CentOS7.6 安装mysql8.0
 
 ### 1、检查是否存在mariadb，如果存在就删除

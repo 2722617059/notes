@@ -1,3 +1,7 @@
+[TOC]
+
+
+
 # C++基础
 
 ## 1 c++初识
@@ -1980,3 +1984,909 @@ C++中利用new操作符在堆区开辟数据
 **语法：**`new 数据类型`
 
 利用new创建的数据，会返回该数据对应的类型的指针
+
+释放空间 delete
+
+``` C++
+int *p = new int(10);
+delete p;
+// 在堆区开辟数组
+int *arr = new int[10];
+delete[] arr;
+```
+
+## 2引用
+### 2.1 引用的基本使用
+**作用：**给变量起别名
+**语法：**`数据类型 &别名 = 原名`
+```C++
+#include<iostream>
+
+using namespace std;
+
+int main() {
+    //引用基本语法
+    //数据类型 &别名 = 原名;
+    int a = 10;
+    cout << a << endl;
+    // 创建引用
+    int &b = a;// 变量b指向变量a的地址
+    cout << b << endl;
+    b = 20;
+    cout << a << endl;
+    return 0;
+}
+
+```
+
+### 2.2 引用的注意事项
+
+- 引用必须初始化
+- 引用在初始化后，不可以改变
+
+```C++
+#include<iostream>
+
+using namespace std;
+
+int main() {
+    int a = 10;
+    cout << "a:" << a << endl;
+    //int &b //错误的,必须初始化
+    int &c = a;
+    cout << "c:" << c << endl;
+    c = 100;
+    cout << "a:" << a << endl;
+    cout << "c:" << c << endl;
+    int d = 20;
+    cout << "d:" << d << endl;
+    //int &c = d;//错误的，引用不能改变
+    c = d; //这是赋值操作，不是更改引用
+    cout << "c:" << c << endl;
+    d = 22;
+    cout << "d:" << d << endl;
+    cout << "c:" << c << endl;
+    return 0;
+}
+```
+
+### 2.3 引用做函数参数
+
+**作用：**函数传参时，可以利用引用的技术让形参修饰实参
+
+**优点：**可以简化指针修改实参
+
+```C++
+#include<iostream>
+
+using namespace std;
+
+//1、值传递
+void swap01(int a, int b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+//2、地址传递
+void swap02(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+//3、引用传递
+void swap03(int &a1, int &b1) {
+    int temp = a1;
+    a1 = b1;
+    b1 = temp;
+}
+
+int main() {
+    int a = 10;
+    int b = 20;
+    cout << "**********值传递**********" << endl;
+    cout << "交换前：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    swap01(a, b);
+    cout << "交换后：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    cout << "**********地址传递**********" << endl;
+    cout << "交换前：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    swap02(&a, &b);
+    cout << "交换后：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    cout << "**********引用传递**********" << endl;
+    cout << "交换前：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    swap03(a, b);
+    cout << "交换后：" << endl;
+    cout << "a:" << a << " b:" << b << endl;
+    return 0;
+}
+```
+
+> 总结：通过引用参数产生的效果同按地址传递是一样的，引用的语法更清楚简单。
+
+### 2.4 引用做函数返回值
+
+**作用：**引用是可以作为函数的返回值存在的
+
+**注意：**==不要返回局部变量引用==
+
+**用法：**函数调用作为左值
+
+```C++
+//返回局部变量引用
+int &test01() {
+    int a = 10;
+    int &b = a;
+    return b;
+}
+
+//返回静态变量引用
+int &test02() {
+    static int a = 10;
+    return a;
+}
+
+int main() {
+    //不能返回局部变量的引用
+    int &ref1 = test01();
+    cout << ref1 << endl;//第一次结果正确，因为编译器做了保留
+    cout << ref1 << endl;//第二次结果错误，因为内存已将释放
+
+    int &ref2 = test02();
+    cout << ref2 << endl;
+    cout << ref2 << endl;
+    //如果函数的返回值是引用，那么这个函数可以作为左值
+    test02() = 1000;
+    cout << ref2 << endl;
+    cout << ref2 << endl;
+    return 0;
+}
+```
+
+### 2.5 引用的本质
+
+本质：==引用的本质在C++内部实现是一个指针常量==
+
+![image-20220505184722523](D:\notes\笔记\后端\C++.assets\image-20220505184722523.png)
+
+> 结论：C+推荐用引用技术，因为语法方便，引用本质是指针常量，但是所有的指针操作编译器都帮我们做了
+
+### 2.6 常量引用
+
+**作用：**常量引用主要用来修饰形参，防止误操作
+在函数形参列表中，可以加const修饰形参，防止形参改变实参
+
+```C++
+//常量引用
+//使用场景：用来修饰形参，防止误操作
+void showValue(const int &val) {
+    //val = 1000;
+    cout << "val=" << val << endl;
+}
+
+int main() {
+
+    //int &ref = 10;//引用必须引一块合法的内存空间,这行错误
+    //加上const之后，编译器将代码修改
+    //int temp = 10; const int &ref = temp;
+    //const int &ref = 10;
+    //ref = 11;//加入const之后变为只读，不可以修改
+
+    //函数中利用常量引用防止误操作修改实参
+    int a = 100;
+    showValue(a);
+    return 0;
+}
+```
+
+## 3 函数提高
+
+### 3.1 函数默认参数
+
+在C++中，函数的形参列表中的形参是可以有默认值的。
+
+**语法：**`返回值类型 函数名 (参数 = 默认值) {}`
+
+```C++
+// 函数默认参数
+//如果我们自己传入数据，就用自己的数据，如果没有，那么用默认值
+//语法：返回值类型 函数名 (形参 = 默认值) {}
+int sum(int a = 10, int b = 100, int c = 1000) {
+    return a + b + c;
+}
+
+//注意事项：
+//1、如果某个位置已经有了默认参数，那么从这个位置往后，从左到右都必须有默认值
+//2、如果函数声明有默认参数，函数实现就不能有默认参数
+//  声明和实现只能有一个有默认参数
+
+int main() {
+    int s0 = sum();//1110
+    int s1 = sum(1);//1101
+    int s2 = sum(1, 2);//1003
+    int s3 = sum(1, 2, 3);//6
+
+    return 0;
+}
+```
+
+### 3.2 函数占位参数
+
+C++函数的形参列表里可以有占位参数，用来做占位，调用该函数时必须填补该位置。
+
+**语法：**`返回值类型 函数名 （数据类型) {}`
+
+```C++
+//目前用不到占位参数
+//占位参数还可以有默认参数
+void func1(int a, int) {
+    cout << "*****************" << endl;
+}
+
+void func2(int a, int = 10) {
+    cout << "*******" << endl;
+}
+
+int main() {
+    func1(10, 20);
+    func2(10);
+    return 0;
+}
+```
+
+### 3.3 函数重载
+
+#### 3.3.1 函数重载概述
+
+**作用：**函数名可以相同，提高重用性
+
+**函数重载满足条件：**
+
+- 同一个作用域下
+- 函数名称相同
+- 函数参数**类型不同** or **个数不同**  or (参数类型)**顺序不同**
+
+**注意：**函数的返回值不可以作为函数重载的条件
+
+```C++
+void func() {
+    cout << "*" << endl;
+}
+
+void func(int a) {
+    cout << "**" << endl;
+}
+
+void func(char a) {
+    cout << "***" << endl;
+}
+
+void func(int a, char b) {
+    cout << "****" << endl;
+}
+
+void func(char b, int a) {
+    cout << "*****" << endl;
+}
+
+int main() {
+    func();
+    func(1);
+    func('a');
+    func(1, 'c');
+    func('c', 1);
+    return 0;
+}
+```
+
+#### 3.3.2 函数重载注意事项
+
+- 引用作为重载条件
+- 函数重载碰到函数默认参数
+
+```C++
+//1、引用作为重载的条件
+void func(int &a) {
+    cout << "func(int &a)调用" << endl;
+}
+
+void func(const int &b) {
+    cout << "const func(int &b)调用" << endl;
+}
+
+//2、函数重载碰到默认参数
+void func1(int a, int b = 10) {
+    cout << "func(int a)调用" << endl;
+}
+
+void func1(int a) {
+    cout << "func(int a = 10)调用" << endl;
+}
+
+int main() {
+    int a = 10;
+    func(a);//调用无const
+    const int b = 10;
+    func(b);//调用有const
+    func(1);//调用有const
+
+    //func1(10);//碰到默认参数产生歧义，需要避免
+    return 0;
+}
+
+```
+
+## 4 类和对象
+
+C++面向对象三大特性：==封装==、==继承==、==多态==
+
+C++认为==万事万物皆为对象==，对象上有其属性和行为
+
+具有==相同性质==的对象，我们称之为==类==
+
+### 4.1 封装
+
+#### 4.1.1 封装的意义
+
+封装是C++面向对象的三大特性之一
+
+**封装的意义：**
+
+- 将属性和行为作为一个整体，表现生活中的事物
+- 将属性和行为加以权限控制
+
+**封装的意义一：**
+
+- 在设计类的时候，属性和行为写在一起，表现事物
+
+**语法：**`class 类名 {访问权限: 属性 / 行为}`
+
+**示例：**
+
+```C++
+//设计一个圆类，求周长
+class Circle {
+//访问权限
+//私有权限
+private:
+    double PI = 3.14;
+//公共权限
+public:
+    //属性
+    //半径
+    double m_r;
+
+    //行为
+    //获取圆的周长
+    double calculateZC() {
+        return 2 * PI * m_r;
+    }
+};
+
+int main() {
+    //通过类创建对象(实例化)
+    Circle circle;
+    //给对象赋值
+    circle.m_r = 10;
+    //调用对象的行为
+    cout << "圆的周长为：" << circle.calculateZC() << endl;
+    return 0;
+}
+```
+
+> 实例化：`类名 对象名;`
+
+**示例2：**
+
+设计一个学生类，属性有姓名和学号，可以给姓名和学号赋值，可以显示学生的姓名和学号。
+
+```C++
+class Student {
+    public:
+    //类中的属性和行为统称为 成员
+    //属性：成员属性、成员变量
+    //行为：成员函数、成员方法
+
+    //属性
+    string m_Name;
+    string m_Id;
+
+    //方法
+    void toString() {
+        cout << "姓名：" << m_Name << ";学号：" << m_Id << endl;
+    }
+
+    void setName(string name) {
+        m_Name = name;
+    }
+
+    void setId(string id) {
+        m_Id = id;
+    }
+
+    string getName() {
+        return m_Name;
+    }
+
+    string getId() {
+        return m_Id;
+    }
+};
+
+int main() {
+    Student student;
+    student.setName("东方不败");
+    student.setId("10000001");
+    student.toString();
+    return 0;
+}
+```
+
+**封装的意义二：**
+
+类在设计的时候可以把属性和行为放到不同的权限下，加以控制
+
+**访问权限**有三种：
+
+1. public        公共权限	类内可以访问，类外也可以访问
+2. protected 保护权限    类内可以访问，类外不可以访问，子类可以访问父类的保护内容
+3. private      私有权限    类内可以访问，类外不可以访问
+
+#### 4.1.2 struct和class的区别
+
+在C++中struct和class唯一的区别在于**默认的访问权限不同**
+
+区别：
+
+- struct默认权限为公共
+- class默认权限为私有
+
+```C++
+struct C1 {
+    int m_a;
+
+    void toString() {
+        cout << "struct m_a:" << m_a << endl;
+    }
+};
+
+class C2 {
+    int m_a;
+};
+
+int main() {
+    //struct和class区别
+    //struct默认权限是公共 public
+    //class 默认权限是私有 private
+    C1 c1;
+    c1.m_a = 10;//在struct默认的权限为公共，因此可以访问
+    C2 c2;
+    //c2.m_a = 11;//在class默认的权限为私有，因此不可以访问
+    return 0;
+}
+```
+
+#### 4.1.3 成员变量设置为私有
+
+**优点1：**将所有成员属性设置为私有，可以自己控制读写权限
+
+**优点2：**对于写权限，我们可以检测数据的有效性
+
+```C++
+#include<iostream>
+#include<string>
+
+using namespace std;
+
+class Person {
+public:
+    //写姓名
+    void setName(string name) {
+        m_Name = name;
+    }
+
+    //读姓名
+    string getName() {
+        return m_Name;
+    }
+
+    //设置年龄
+    void setAge(int age) {
+        if (age < 0 || age > 150) {
+            m_Age = -1;
+            cout << "年龄有误！" << endl;
+            return;
+        }
+        m_Age = age;
+    }
+
+
+    //获取年龄
+    int getAge() {
+        return m_Age;
+    }
+
+    //设置情人
+    void setLover(string lover) {
+        m_Lover = lover;
+    }
+
+    void toString() {
+        cout << "姓名：" << m_Name <<
+             "\n年龄：" << m_Age <<
+             "\n情人：" << m_Lover << endl;
+    }
+
+private:
+    //姓名    可读可写
+    string m_Name;
+    //年龄    可读可写
+    int m_Age;
+    //情人    只写
+    string m_Lover;
+};
+
+int main() {
+    Person person;
+    person.setName("Eric");
+    person.setAge(99);
+    person.setLover("Lily");
+    person.toString();
+    return 0;
+}
+```
+
+#### 4.1.4 案例：设计立方体类
+
+设计立方体类(Cube)
+
+求出立方体的面积和体积
+
+分别用全局函数和成员函数判断两个立方体是否相等
+
+```C++
+#include<iostream>
+
+using namespace std;
+
+class Cube {
+public:
+    //设置长度
+    void setM_L(int l) {
+        if (l <= 0) {
+            l = 0;
+            cout << "长度小于等于0，错误！" << endl;
+            return;
+        }
+        m_L = l;
+    }
+
+    //获取长度
+    int getM_L() {
+        return m_L;
+    }
+
+    //设置宽度
+    void setM_W(int w) {
+        if (w <= 0) {
+            w = 0;
+            cout << "宽度小于等于0，错误！" << endl;
+            return;
+        }
+        m_W = w;
+    }
+
+    //获取宽度
+    int getM_W() {
+        return m_W;
+    }
+
+    //设置高度
+    void setM_H(int h) {
+        if (h <= 0) {
+            h = 0;
+            cout << "长度小于等于0，错误！" << endl;
+            return;
+        }
+        m_H = h;
+    }
+
+    //获取高度
+    int getM_H() {
+        return m_H;
+    }
+
+    //获取全部属性
+    void toString() {
+        cout << "长：" << m_L << "  宽：" << m_W << "  高：" << m_H << endl;
+    }
+
+    //获取表面积
+    int getArea() {
+        return m_L * m_W * 2 + m_L * m_H * 2 + m_W * m_H * 2;
+    }
+
+    //获取立方体体积
+    int getVolume() {
+        return m_L * m_W * m_H;
+    }
+
+    //判断两个立方体是否相等
+    bool isSame(Cube cube) {
+        if (m_L == cube.getM_L() && m_H == cube.getM_H() && m_W == cube.getM_W()) {
+            cout << "两个立方体相等。" << endl;
+            return true;
+        } else {
+            cout << "两个立方体不相等。" << endl;
+            return false;
+        }
+    }
+
+private:
+    int m_L;//长
+    int m_W;//宽
+    int m_H;//高
+};
+
+bool isSame(Cube c1, Cube c2) {
+    if (c1.getM_L() == c2.getM_L() && c1.getM_H() == c2.getM_H() && c1.getM_W() == c2.getM_W()) {
+        cout << "两个立方体相等。" << endl;
+        return true;
+    } else {
+        cout << "两个立方体不相等。" << endl;
+        return false;
+    }
+}
+
+int main() {
+    Cube c1;
+    c1.setM_L(10);
+    c1.setM_W(1);
+    c1.setM_H(10);
+    c1.toString();
+
+    Cube c2;
+    c2.setM_L(10);
+    c2.setM_W(1);
+    c2.setM_H(10);
+    c2.toString();
+    //成员函数判断
+    c1.isSame(c2);
+    //全局函数判断
+    isSame(c1, c2);
+    return 0;
+}
+```
+
+#### 4.1.5 案例：点和圆的关系
+
+设计一个圆类(Circle),和一个点类(Point)，计算点和圆的关系。
+
+### 4.2 对象的初始化和清理
+
+- 生活中我们买的电子产品都基本会有出厂设置，在某一天我们不用时候也会删除一些自己的信息数据，保证安全。
+- C++中的面向对象来源于生活，每个对象也都会有初始设置以及对象销毁前的清理数据的设置。
+
+#### 4.2.1 构造函数和析构函数
+
+对象的**初始化和清理**也是两个非常重要的安全问题
+
+- 一个对象或者变量没有初始状态，对其使用后果是未知的。
+
+- 同样的使用完一个对象或变量，没有及时清理，也会造成一定的安全问题。
+
+
+
+C++利用了**构造函数和析构函数**解决上述问题，这两个函数将会被编译器自动调用，完成对象初始化和清理工作。
+
+对象的初始化和清理工作是**编译器强制**要我们做的事情，因此如果我们**不提供构造和析构，编译器会提供**
+
+**编译器提供的构造函数和析构函数是空实现。**
+
+- 构造函数：主要作用在于创建对象时为对象的成员属性赋值，构造函数由编译器自动调用，无需手动调用。
+- 析构函数：主要作用在于对象销毁前自动调用，执行一些清理工作。
+
+
+
+**构造函数语法：**`类名(){}`
+
+1. 构造函数，没有返回值，也不写void
+2. 函数名称与类名相同
+3. 构造函数**何以有参数**，因此可以发生**重载**
+4. 程序在调用对象时会自动调用构造，无需手动调用，而且只会调用一次
+
+**析构函数：**`~类名(){}`
+
+1. 析构函数，没有返回值，也不写void
+2. 函数名称与类名相同，在名称前加上符号~
+3. 析构函数**不可以有函数**，因此不可以发生重载
+4. 程序在对象销毁前会自动调用析构，无需手动调用，而且只会调用一次
+
+```C++
+class Person {
+
+public:
+    //构造函数
+    Person() {
+        cout << "执行构造函数" << endl;
+    }
+
+    //析构函数
+    ~Person() {
+        cout << "析构函数" << endl;
+    }
+};
+```
+
+#### 4.2.2 构造函数的分类及调用
+
+两种分类方式：
+
+- 按参数分：**有参构造**和**无参构造**
+- 按类型分：**普通构造**和**拷贝构造**
+
+三种调用方式：
+
+- 括号法
+- 显示法
+- 隐式转换法
+
+**注意事项：**
+
+1. 调用默认构造函数的的时候不要加()
+2. 不要用拷贝构造函数构造匿名对象
+
+```C++
+class Person {
+
+public:
+    //普通构造
+    //无参构造(默认构造)
+    Person() {
+        cout << "执行无参构造函数" << endl;
+    }
+
+    //有参构造
+    Person(int a) {
+        m_age = a;
+        cout << "执行有参构造函数" << endl;
+    }
+
+    //拷贝构造
+    Person(const Person &p) {
+        //将拷贝对象的所有属性全部传到新建对象的身上
+        cout << "执行拷贝参构造函数" << endl;
+        m_age = p.m_age;
+    }
+
+    //析构函数
+    ~Person() {
+        cout << "执行析构函数" << endl;
+    }
+
+//private:
+    int m_age;
+};
+
+//函数调用
+void test01() {
+    //1、括号法
+    Person p1;
+    Person p2(10);
+    Person p3(p2);
+    cout << "p2的年龄为：" << p2.m_age << endl;
+    cout << "p3的年龄为：" << p3.m_age << endl;
+}
+
+void test02() {
+    //2、显示法
+    Person p1;
+    Person p2 = Person(10);
+    Person p3 = Person(p2);
+    //匿名对象
+    //特点：当前行执行结束后，系统会立即回收掉匿名对象
+    Person(20);
+    //Person(p2);//Person(p2) === Person p2;对象声明
+}
+
+void test03() {
+    //3、隐式转换法
+    Person p2 = 10; //相当于Person p2 = Person(10);
+    Person p3 = p2; //相当于Person p3 = Person(p2);
+    cout << "p2的年龄为：" << p2.m_age << endl;
+    cout << "p3的年龄为：" << p3.m_age << endl;
+}
+```
+
+#### 4.2.3 拷贝构造函数调用时机
+
+C++中拷贝构造函数调用时机通常有三种情况：
+
+- 同时用一个已经创建完毕的对象来初始化一个新对象
+- 值传递的方式给函数参数传值
+- 以值方式返回局部对象
+
+```C++
+#include<iostream>
+
+using namespace std;
+
+class Person {
+public:
+    int m_Age;
+
+    //构造函数
+    //无参构造
+    Person() {
+        cout << "Person调用无参构造函数" << endl;
+    }
+
+    //有参构造
+    Person(int age) {
+        m_Age = age;
+        cout << "Person调用有参构造函数" << endl;
+    }
+
+    //拷贝构造
+    Person(const Person &p) {
+        cout << "Person调用拷贝构造函数" << endl;
+        m_Age = p.m_Age;
+    }
+
+    ~Person() {
+        cout << "Person调用析构函数" << endl;
+    }
+};
+
+//1、使用一个已经创建的对象来初始化一个新对象
+void test01() {
+    Person p1(20);
+    Person p2 = Person(p1);
+}
+
+//2、值传递方式给函数参数传值
+void doWork1(Person p) {
+
+}
+
+void test02() {
+    Person p;
+    doWork1(p);
+}
+
+//3、以值的方式返回局部对象
+Person doWork2() {
+    Person p1;
+    cout << &p1 << endl;
+    return p1;
+}
+
+void test03() {
+    Person p2 = doWork2();
+    cout << &p2 << endl;
+
+}
+
+int main() {
+    test03();
+    return 0;
+}
+```
+
+#### 4.2.4 构造函数调用规则
+
+默认情况下，C++编译器至少给一个类添加三个函数：
+
+1. 默认构造函数(无参，函数体为空)
+2. 默认析构函数(无参，函数体为空)
+3. 默认拷贝构造函数，对属性进行值拷贝
+
+构造函数调用规则如下：
+
+- 如果用户定义有构造函数，C++不再提供默认无参构造，但是会提供默认拷贝构造
+- 如果用户定义拷贝构造函数，C++不会再提供其他构造函数

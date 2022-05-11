@@ -1,14 +1,4 @@
-我的git远程仓库 
-
-```
-https://github.com/2722617059/TeaShop.git/
-//linux下tomcat webapps地址
-/usr/local/tomcat/apache-tomcat-10.0.13/webapps/
-// tomcat 启动
-sh /usr/local/tomcat/bin/startup.sh
-// 关闭tomcat
-sh /usr/local/tomcat/bin/shutdown.sh
-```
+[TOC]
 
 
 
